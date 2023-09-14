@@ -1,0 +1,15 @@
+{
+  "editor.cursorBlinking": "smooth",
+  "editor.linkedEditing": true,
+  "breadcrumbs.enabled": false,
+  "editor.cursorSmoothCaretAnimation": "on",
+  "workbench.colorTheme": "Aura Dark",
+  "workbench.iconTheme": "material-icon-theme",
+  "editor.scrollbar.vertical": "hidden",
+  "editor.formatOnSave": true,
+  "editor.guides.indentation": false,
+  "editor.glyphMargin": false,
+  "editor.tabSize": 2,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "exportall.config.relExclusion": ["/src/auth/dto"]
+}
