@@ -11,7 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { ChangePasswordDto, LoginDto, RegisterDto } from '../dto';
 import { User } from 'src/users';
 import { MyResponse } from 'src/core';
-import { JwtPayload, LoginResponse } from '../interfaces';
+import { CheckTokenResponse, JwtPayload, LoginResponse } from '../interfaces';
 
 @Injectable()
 export class AuthService {
@@ -87,10 +87,7 @@ export class AuthService {
       status: 'Created',
       message: 'Usuario encontrado con éxito',
       reply: {
-        user_id: user.user_id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        user,
         token,
       },
     };
@@ -126,7 +123,7 @@ export class AuthService {
 
       const response: MyResponse<Record<string, never>> = {
         statusCode: 200,
-        status: 'Ok',
+        status: 'OK',
         message: 'La Contraseña se cambio con éxito',
         reply: {},
       };
@@ -136,6 +133,21 @@ export class AuthService {
       console.log(error);
       this.handleDBErrors(error);
     }
+  }
+
+  checkToken(user: User): MyResponse<CheckTokenResponse> {
+    const token = this.getJwtToken({ sub: user.user_id, user: user.email });
+    const response: MyResponse<CheckTokenResponse> = {
+      statusCode: 200,
+      status: 'OK',
+      message: 'La Contraseña se cambio con éxito',
+      reply: {
+        user,
+        token,
+      },
+    };
+
+    return response;
   }
 
   private getJwtToken(payload: JwtPayload): string {

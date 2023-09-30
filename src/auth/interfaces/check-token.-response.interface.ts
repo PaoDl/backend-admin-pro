@@ -1,6 +1,6 @@
 import { User } from 'src/users';
 
-export interface LoginResponse {
+export interface CheckTokenResponse {
   user: User;
   token: string;
 }
