@@ -4,23 +4,17 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
   ManyToMany,
-  ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { Animal } from './animal.entity';
-import { Biome } from './biome.entity';
-import { Diet } from './diet.entity';
+import { Species } from './species.entity';
 import { capitalizeWords } from 'src/core';
 
-@Entity('species')
-export class Species {
+@Entity('diet')
+export class Diet {
   @PrimaryGeneratedColumn('uuid')
-  species_id: string;
+  diet_id: string;
 
   @Column('text', {
     unique: true,
@@ -30,18 +24,8 @@ export class Species {
   @Column('text')
   description: string;
 
-  @Column('text')
-  scientific_name: string;
-
-  @OneToMany(() => Animal, (animal) => animal.species)
-  animals: Animal[];
-
-  @ManyToOne(() => Biome, (biome) => biome.species)
-  biome: Biome;
-
-  @ManyToMany(() => Diet, (diet) => diet.species)
-  @JoinTable()
-  diets: Diet[];
+  @ManyToMany(() => Species, (species) => species.diets)
+  species: Species[];
 
   @CreateDateColumn({
     type: 'timestamptz',

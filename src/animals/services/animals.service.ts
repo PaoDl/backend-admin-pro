@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { CreateAnimalDto } from '../dto/create-animal.dto';
 import { UpdateAnimalDto } from '../dto/update-animal.dto';
-import { Animal, Species } from '../entities';
+import { Animal, Diet, Species } from '../entities';
 import { Repository } from 'typeorm';
 import { MyResponse } from 'src/core';
 
@@ -19,19 +19,37 @@ export class AnimalsService {
 
     @InjectRepository(Species)
     private readonly speciesRepository: Repository<Species>,
+
+    @InjectRepository(Diet)
+    private readonly dietRepository: Repository<Diet>,
   ) {}
 
   async create(createAnimalDto: CreateAnimalDto): Promise<MyResponse<Animal>> {
     const { species_id, ...allData } = createAnimalDto;
 
-    const species = await this.speciesRepository.findOneBy({
+    const diets: Diet[] = [];
+
+    for (const diet_id of allData.diets) {
+      const diet = await this.dietRepository.findOneBy({ diet_id });
+
+      if (diet) {
+        diets.push(diet);
+      } else {
+        throw new NotFoundException(`La dieta #${diet_id} no existe`);
+      }
+    }
+
+    const species = await this.speciesRepository.preload({
       species_id,
+      diets,
     });
 
     if (!species)
       throw new NotFoundException(`La especie #${species_id} no existe`);
 
     try {
+      await this.speciesRepository.save(species);
+
       const animal = await this.animalRepository.create({
         ...allData,
         species: species,
@@ -53,14 +71,24 @@ export class AnimalsService {
     }
   }
 
-  findAll() {
-    return `This action returns all animals`;
+  async findAll() {
+    const animals: Animal[] = await this.animalRepository.find({
+      where: { is_alive: true },
+    });
+    const response: MyResponse<Animal[]> = {
+      statusCode: 200,
+      status: 'OK',
+      message: 'Lista de Animales',
+      reply: animals,
+    };
+
+    return response;
   }
 
   async findOne(animal_id: string): Promise<MyResponse<Animal>> {
     const animal = await this.animalRepository.findOne({
       where: { animal_id },
-      relations: ['species', 'species.biome', 'medical_record'],
+      relations: ['species', 'species.biome', 'species.diets'],
     });
 
     if (!animal)
@@ -76,15 +104,59 @@ export class AnimalsService {
     return response;
   }
 
-  update(id: number, updateAnimalDto: UpdateAnimalDto) {
-    return `This action updates a #${id} animal`;
+  async update(
+    animal_id: string,
+    updateAnimalDto: UpdateAnimalDto,
+  ): Promise<MyResponse<Animal>> {
+    const animal = await this.animalRepository.preload({
+      animal_id,
+      ...updateAnimalDto,
+    });
+    if (!animal)
+      throw new NotFoundException(`El animal #${animal_id} no fue encontrado`);
+    try {
+      await this.animalRepository.save(animal);
+
+      const response: MyResponse<Animal> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `El animal ${animal.name} fue actualizado correctamente`,
+        reply: animal,
+      };
+      return response;
+    } catch (error) {
+      console.log(error);
+      this.handleDBErrors(error);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} animal`;
+  async remove(animal_id: string): Promise<MyResponse<Record<string, never>>> {
+    const animal = await this.animalRepository.preload({
+      animal_id,
+      is_alive: false,
+    });
+
+    if (!animal)
+      throw new NotFoundException(`El animal #${animal_id} no fue encontrado`);
+
+    try {
+      await this.animalRepository.save(animal);
+
+      const response: MyResponse<Record<string, never>> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `El animal ${animal.name} fue dado de baja correctamente`,
+        reply: {},
+      };
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      this.handleDBErrors(error);
+    }
   }
 
   private handleDBErrors(error: any): never {
-    throw new BadRequestException(`Error: ${error.detail}`);
+    throw new BadRequestException(error);
   }
 }

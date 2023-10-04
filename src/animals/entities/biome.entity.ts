@@ -1,4 +1,6 @@
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -7,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Species } from './species.entity';
+import { capitalizeWords } from 'src/core';
 
 @Entity('biome')
 export class Biome {
@@ -35,4 +38,14 @@ export class Biome {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updated_at: Date;
+
+  @BeforeInsert()
+  checkFieldsBeforeInsert(): void {
+    this.name = capitalizeWords(this.name);
+  }
+
+  @BeforeUpdate()
+  checkFieldsBeforeUpdate(): void {
+    this.checkFieldsBeforeInsert();
+  }
 }
