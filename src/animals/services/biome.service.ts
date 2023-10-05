@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateBiomeDto } from '../dto';
 import { MyResponse } from 'src/core';
 import { Repository } from 'typeorm';
+import { handleDBErrors } from 'src/core';
 
 @Injectable()
 export class BiomeService {
@@ -40,11 +41,10 @@ export class BiomeService {
       return response;
     } catch (error) {
       console.log(error);
-      this.handleDBErrors(error);
+      handleDBErrors(error);
     }
   }
-
-  private handleDBErrors(error: any): never {
-    throw new BadRequestException(`Error: ${error.detail}`);
+  catch(error) {
+    handleDBErrors(error);
   }
 }

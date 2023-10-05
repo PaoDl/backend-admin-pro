@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { Biome, Species } from '../entities';
 import { CreateSpeciesDto } from '../dto';
 import { MyResponse } from 'src/core';
+import { handleDBErrors } from 'src/core/helpers';
 
 @Injectable()
 export class SpeciesService {
@@ -55,7 +56,7 @@ export class SpeciesService {
       return response;
     } catch (error) {
       console.log(error);
-      this.handleDBErrors(error);
+      handleDBErrors(error);
     }
   }
 
@@ -77,8 +78,8 @@ export class SpeciesService {
 
     return response;
   }
-
-  private handleDBErrors(error: any): never {
-    throw new BadRequestException(`Error: ${error.detail}`);
+  catch(error) {
+    console.log(error);
+    handleDBErrors(error);
   }
 }

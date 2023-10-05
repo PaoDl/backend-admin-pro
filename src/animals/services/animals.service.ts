@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { CreateAnimalDto } from '../dto/create-animal.dto';
@@ -10,6 +6,7 @@ import { UpdateAnimalDto } from '../dto/update-animal.dto';
 import { Animal, Diet, Species } from '../entities';
 import { Repository } from 'typeorm';
 import { MyResponse } from 'src/core';
+import { handleDBErrors } from 'src/core/helpers';
 
 @Injectable()
 export class AnimalsService {
@@ -67,7 +64,7 @@ export class AnimalsService {
       return response;
     } catch (error) {
       console.log(error);
-      this.handleDBErrors(error);
+      handleDBErrors(error);
     }
   }
 
@@ -126,7 +123,7 @@ export class AnimalsService {
       return response;
     } catch (error) {
       console.log(error);
-      this.handleDBErrors(error);
+      handleDBErrors(error);
     }
   }
 
@@ -152,11 +149,10 @@ export class AnimalsService {
       return response;
     } catch (error) {
       console.log(error);
-      this.handleDBErrors(error);
+      handleDBErrors(error);
     }
   }
-
-  private handleDBErrors(error: any): never {
-    throw new BadRequestException(error);
+  catch(error) {
+    handleDBErrors(error);
   }
 }
