@@ -82,4 +82,14 @@ export class SpeciesService {
     console.log(error);
     handleDBErrors(error);
   }
+  async findAll() {
+    const species: Species[] = await this.speciesRepository.find({});
+    const response: MyResponse<Species[]> = {
+      statusCode: 200,
+      status: 'OK',
+      message: 'Lista de Especies',
+      reply: species,
+    };
+    return response;
+  }
 }

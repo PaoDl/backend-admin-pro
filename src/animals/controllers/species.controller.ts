@@ -25,6 +25,11 @@ export class SpeciesController {
     return this.speciesService.create(createSpeciesDto);
   }
 
+  @Get()
+  findAll(): Promise<MyResponse<Species[]>> {
+    return this.speciesService.findAll();
+  }
+
   @Get(':species_id')
   getSpecies(
     @Param('species_id', ParseUUIDPipe) species_id: string,
