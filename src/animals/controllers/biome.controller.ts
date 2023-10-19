@@ -1,4 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Post,
+  Get,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 
 import { BiomeService } from '../services';
 import { CreateBiomeDto } from '../dto';
@@ -14,5 +21,17 @@ export class BiomeController {
   @Post()
   create(@Body() createBiomeDto: CreateBiomeDto): Promise<MyResponse<Biome>> {
     return this.biomeService.create(createBiomeDto);
+  }
+
+  @Get(':biome_id')
+  getDiet(
+    @Param('biome_id', ParseUUIDPipe) biome_id: string,
+  ): Promise<MyResponse<Biome>> {
+    return this.biomeService.getBiome(biome_id);
+  }
+
+  @Get()
+  findAll(): Promise<MyResponse<Biome[]>> {
+    return this.biomeService.findAll();
   }
 }

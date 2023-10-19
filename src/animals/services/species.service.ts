@@ -78,10 +78,7 @@ export class SpeciesService {
 
     return response;
   }
-  catch(error) {
-    console.log(error);
-    handleDBErrors(error);
-  }
+
   async findAll() {
     const species: Species[] = await this.speciesRepository.find({});
     const response: MyResponse<Species[]> = {
@@ -91,5 +88,9 @@ export class SpeciesService {
       reply: species,
     };
     return response;
+  }
+  catch(error) {
+    console.log(error);
+    handleDBErrors(error);
   }
 }

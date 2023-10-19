@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -43,5 +47,37 @@ export class DietService {
       console.log(error);
       handleDBErrors(error);
     }
+  }
+  async getDiet(diet_id: string): Promise<MyResponse<Diet>> {
+    const diet = await this.dietRepository.findOne({
+      where: { diet_id },
+      relations: ['species'],
+    });
+
+    if (!diet) throw new NotFoundException(`La dieta #${diet_id} no existe`);
+
+    const response: MyResponse<Diet> = {
+      statusCode: 200,
+      status: 'OK',
+      message: `La dieta #${diet_id} fue encontrada exitosamente`,
+      reply: diet,
+    };
+
+    return response;
+  }
+
+  async findAll() {
+    const diets: Diet[] = await this.dietRepository.find({});
+    const response: MyResponse<Diet[]> = {
+      statusCode: 200,
+      status: 'OK',
+      message: 'Lista de Dietas',
+      reply: diets,
+    };
+    return response;
+  }
+  catch(error) {
+    console.log(error);
+    handleDBErrors(error);
   }
 }

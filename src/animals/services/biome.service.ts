@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Biome } from '../entities/biome.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateBiomeDto } from '../dto';
@@ -43,6 +47,34 @@ export class BiomeService {
       console.log(error);
       handleDBErrors(error);
     }
+  }
+  async getBiome(biome_id: string): Promise<MyResponse<Biome>> {
+    const biome = await this.biomeRepository.findOne({
+      where: { biome_id },
+      relations: ['species'],
+    });
+
+    if (!biome) throw new NotFoundException(`El Bioma #${biome_id} no existe`);
+
+    const response: MyResponse<Biome> = {
+      statusCode: 200,
+      status: 'OK',
+      message: `El Bioma #${biome_id} fue encontrado exitosamente`,
+      reply: biome,
+    };
+
+    return response;
+  }
+
+  async findAll() {
+    const biomes: Biome[] = await this.biomeRepository.find({});
+    const response: MyResponse<Biome[]> = {
+      statusCode: 200,
+      status: 'OK',
+      message: 'Lista de Biomas',
+      reply: biomes,
+    };
+    return response;
   }
   catch(error) {
     handleDBErrors(error);
