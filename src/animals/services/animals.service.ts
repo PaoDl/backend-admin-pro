@@ -71,6 +71,7 @@ export class AnimalsService {
   async findAll() {
     const animals: Animal[] = await this.animalRepository.find({
       where: { is_alive: true },
+      relations: ['species', 'species.biome', 'species.diets'],
     });
     const response: MyResponse<Animal[]> = {
       statusCode: 200,
