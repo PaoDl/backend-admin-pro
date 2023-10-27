@@ -9,6 +9,7 @@ import { CreateBiomeDto } from '../dto';
 import { MyResponse } from 'src/core';
 import { Repository } from 'typeorm';
 import { handleDBErrors } from 'src/core';
+import { UpdateBiomeDto } from '../dto/update-biome.dto';
 
 @Injectable()
 export class BiomeService {
@@ -75,6 +76,53 @@ export class BiomeService {
       reply: biomes,
     };
     return response;
+  }
+  async update(
+    biome_id: string,
+    updateBiomeDto: UpdateBiomeDto,
+  ): Promise<MyResponse<Biome>> {
+    const biome = await this.biomeRepository.preload({
+      biome_id,
+      ...updateBiomeDto,
+    });
+    if (!biome)
+      throw new NotFoundException(`El Bioma #${biome_id} no fue encontrado`);
+    try {
+      await this.biomeRepository.save(biome);
+
+      const response: MyResponse<Biome> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `El Bioma ${biome.name} fue actualizado correctamente`,
+        reply: biome,
+      };
+      return response;
+    } catch (error) {
+      handleDBErrors(error);
+    }
+  }
+  async remove(biome_id: string): Promise<MyResponse<Record<string, never>>> {
+    const biome = await this.biomeRepository.preload({
+      biome_id,
+    });
+
+    if (!biome)
+      throw new NotFoundException(`El Bioma #${biome_id} no fue encontrado`);
+
+    try {
+      await this.biomeRepository.save(biome);
+
+      const response: MyResponse<Record<string, never>> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `El Bioma ${biome.name} fue dado de baja correctamente`,
+        reply: {},
+      };
+
+      return response;
+    } catch (error) {
+      handleDBErrors(error);
+    }
   }
   catch(error) {
     handleDBErrors(error);

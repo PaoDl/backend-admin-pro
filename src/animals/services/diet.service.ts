@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Diet } from '../entities';
-import { CreateDietDto } from '../dto';
+import { CreateDietDto, UpdateDietDto } from '../dto';
 import { MyResponse, handleDBErrors } from 'src/core';
 
 @Injectable()
@@ -79,5 +79,56 @@ export class DietService {
   catch(error) {
     console.log(error);
     handleDBErrors(error);
+  }
+
+  async update(
+    diet_id: string,
+    updateDietDto: UpdateDietDto,
+  ): Promise<MyResponse<Diet>> {
+    const diet = await this.dietRepository.preload({
+      diet_id,
+      ...updateDietDto,
+    });
+    if (!diet)
+      throw new NotFoundException(`La dieta #${diet_id} no fue encontrada`);
+    try {
+      await this.dietRepository.save(diet);
+
+      const response: MyResponse<Diet> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `La dieta ${diet.name} fue actualizada correctamente`,
+        reply: diet,
+      };
+      return response;
+    } catch (error) {
+      console.log(error);
+      handleDBErrors(error);
+    }
+  }
+
+  async remove(diet_id: string): Promise<MyResponse<Record<string, never>>> {
+    const diet = await this.dietRepository.preload({
+      diet_id,
+    });
+
+    if (!diet)
+      throw new NotFoundException(`La dieta #${diet_id} no fue encontrada`);
+
+    try {
+      await this.dietRepository.save(diet);
+
+      const response: MyResponse<Record<string, never>> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `La dieta ${diet.name} fue dada de baja correctamente`,
+        reply: {},
+      };
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      handleDBErrors(error);
+    }
   }
 }

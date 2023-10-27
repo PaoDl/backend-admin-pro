@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Biome, Species } from '../entities';
-import { CreateSpeciesDto } from '../dto';
+import { CreateSpeciesDto, UpdateSpeciesDto } from '../dto';
 import { MyResponse } from 'src/core';
 import { handleDBErrors } from 'src/core/helpers';
 
@@ -92,5 +92,60 @@ export class SpeciesService {
   catch(error) {
     console.log(error);
     handleDBErrors(error);
+  }
+
+  async update(
+    species_id: string,
+    updateSpeciesDto: UpdateSpeciesDto,
+  ): Promise<MyResponse<Species>> {
+    const species = await this.speciesRepository.preload({
+      species_id,
+      ...updateSpeciesDto,
+    });
+    if (!species)
+      throw new NotFoundException(
+        `La especie #${species_id} no fue encontrada`,
+      );
+    try {
+      await this.speciesRepository.save(species);
+
+      const response: MyResponse<Species> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `La especie ${species.name} fue actualizada correctamente`,
+        reply: species,
+      };
+      return response;
+    } catch (error) {
+      console.log(error);
+      handleDBErrors(error);
+    }
+  }
+
+  async remove(species_id: string): Promise<MyResponse<Record<string, never>>> {
+    const species = await this.speciesRepository.preload({
+      species_id,
+    });
+
+    if (!species)
+      throw new NotFoundException(
+        `La especie #${species_id} no fue encontrada`,
+      );
+
+    try {
+      await this.speciesRepository.save(species);
+
+      const response: MyResponse<Record<string, never>> = {
+        statusCode: 200,
+        status: 'OK',
+        message: `La especie ${species.name} fue dada de baja correctamente`,
+        reply: {},
+      };
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      handleDBErrors(error);
+    }
   }
 }
